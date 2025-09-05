@@ -1,0 +1,172 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* FloatChat Design System - Dark Mode Scientific Interface */
+
+@layer base {
+  :root {
+    /* Base dark theme for FloatChat */
+    --background: 222 47% 5%;
+    --foreground: 210 40% 98%;
+
+    --card: 215 28% 10%;
+    --card-foreground: 210 40% 95%;
+
+    --popover: 215 28% 8%;
+    --popover-foreground: 210 40% 95%;
+
+    /* Primary - Vibrant ocean blue */
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 5%;
+
+    /* Secondary - Muted slate for UI elements */
+    --secondary: 215 28% 12%;
+    --secondary-foreground: 210 20% 85%;
+
+    --muted: 215 28% 8%;
+    --muted-foreground: 217 10% 65%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 222 47% 5%;
+
+    --destructive: 0 62.8% 50.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.5rem;
+
+    /* FloatChat specific colors */
+    --ocean-primary: 217 91% 60%;
+    --ocean-secondary: 200 100% 70%;
+    --ocean-dark: 215 28% 5%;
+    --ocean-surface: 215 28% 12%;
+    --ocean-glow: 217 91% 60%;
+
+    /* Gradients for futuristic effects */
+    --gradient-aurora: linear-gradient(135deg, hsl(217 91% 60% / 0.3), hsl(200 100% 70% / 0.2), hsl(280 100% 70% / 0.1));
+    --gradient-ocean: linear-gradient(180deg, hsl(217 91% 60%), hsl(200 100% 50%));
+    --gradient-surface: linear-gradient(135deg, hsl(215 28% 12%), hsl(215 28% 8%));
+
+    /* Animation variables */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --glow-animation: 0 0 30px hsl(217 91% 60% / 0.3);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/50;
+  }
+}
+
+@layer components {
+  /* Aurora background effect */
+  .aurora-bg {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .aurora-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--gradient-aurora);
+    opacity: 0.1;
+    animation: aurora 8s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+
+  @keyframes aurora {
+    0% {
+      transform: translateX(-10%) rotate(0deg);
+      opacity: 0.1;
+    }
+    50% {
+      transform: translateX(10%) rotate(5deg);
+      opacity: 0.2;
+    }
+    100% {
+      transform: translateX(-5%) rotate(-2deg);
+      opacity: 0.1;
+    }
+  }
+
+  /* Glow effects */
+  .glow-primary {
+    box-shadow: var(--glow-animation);
+  }
+
+  .glow-on-hover:hover {
+    box-shadow: var(--glow-animation);
+    transition: var(--transition-smooth);
+  }
+
+  /* Fade in animation */
+  .fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Float point animation */
+  .float-point {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: scale(1) translateY(0px); }
+    50% { transform: scale(1.1) translateY(-5px); }
+  }
+}
+
+.gradient-background {
+  background: linear-gradient(180deg, hsl(210, 80%, 15%), hsl(220, 90%, 5%));
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
