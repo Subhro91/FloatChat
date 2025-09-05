@@ -19,8 +19,9 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 export interface Message {
   id: string;
-  text: string;
-  isUser: boolean;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: any; // Using `any` to accommodate Firebase's serverTimestamp
   visualization?: Visualization;
 }
 
@@ -58,7 +59,7 @@ const Dashboard = () => {
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [mobileTab, setMobileTab] = useState<'history' | 'chat'>('history');
+  const [mobileTab, setMobileTab] = useState<'history' | 'chat' | 'viz'>('chat');
   const isMobile = useMobile();
 
   const exampleQueries = [
@@ -101,7 +102,7 @@ const Dashboard = () => {
       const loadedMessages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
       setMessages(loadedMessages);
 
-      const lastAiMessage = loadedMessages.filter(m => !m.isUser && m.visualization).pop();
+      const lastAiMessage = loadedMessages.filter(m => m.role === 'assistant' && m.visualization).pop();
       if (lastAiMessage) {
         setVisualizations(lastAiMessage.visualization || null);
       } else {
@@ -163,7 +164,7 @@ const Dashboard = () => {
       });
     }
   };
-  
+
   const handleSubmit = async (query: string) => {
     if (!query.trim() || isLoading || !user) return;
 
@@ -272,33 +273,6 @@ Now, generate the appropriate JSON response.`;
     handleSubmit(query);
   };
 
-  const saveMessage = async (message: Omit<Message, 'id' | 'timestamp'>) => {
-    if (!user) return null;
-    let currentChatId = activeChatId;
-
-    if (!currentChatId) {
-      const newChatRef = await addDoc(collection(db, "users", user.uid, "chats"), {
-        title: message.content.substring(0, 30), // Use first 30 chars as title
-        timestamp: serverTimestamp(),
-        lastMessage: message.content,
-      });
-      currentChatId = newChatRef.id;
-      setActiveChatId(currentChatId);
-    }
-    
-    if (currentChatId) {
-      await addDoc(collection(db, "users", user.uid, "chats", currentChatId, "messages"), {
-        ...message,
-        timestamp: serverTimestamp(),
-      });
-       await setDoc(doc(db, "users", user.uid, "chats", currentChatId), { 
-        lastMessage: message.content,
-        timestamp: serverTimestamp(),
-      }, { merge: true });
-    }
-    return currentChatId;
-  };
-
   const handleSignOut = async () => {
     try {
       await signOut(auth);
@@ -328,19 +302,21 @@ Now, generate the appropriate JSON response.`;
   if (isMobile) {
     return (
       <div className="h-screen bg-background gradient-background">
-        <Tabs value={mobileTab} onValueChange={setMobileTab} className="h-full flex flex-col">
-          <TabsContent value="history" className="flex-1 overflow-y-auto bg-card/20"><ChatHistoryPanel {...props} /></TabsContent>
-          <TabsContent value="chat" className="flex-1 overflow-y-auto bg-card/30"><ChatPanel {...props} /></TabsContent>
-          <TabsContent value="viz" className="flex-1 overflow-y-auto"><VisualizationPanel {...props} /></TabsContent>
+        <Tabs value={mobileTab} onValueChange={(value) => setMobileTab(value as 'history' | 'chat' | 'viz')} className="h-full flex flex-col">
+          <div className="flex-1 overflow-y-auto">
+            <TabsContent value="history" className="h-full"><ChatHistoryPanel {...props} /></TabsContent>
+            <TabsContent value="chat" className="h-full"><ChatPanel {...props} /></TabsContent>
+            <TabsContent value="viz" className="h-full"><VisualizationPanel {...props} /></TabsContent>
+          </div>
           <TabsList className="grid w-full grid-cols-3 rounded-none">
             <TabsTrigger value="history"><MessageSquare className="w-5 h-5" /></TabsTrigger>
             <TabsTrigger value="chat"><Send className="w-5 h-5" /></TabsTrigger>
             <TabsTrigger value="viz"><BarChart2 className="w-5 h-5" /></TabsTrigger>
           </TabsList>
-        </Tabs>
+         </Tabs>
         </div>
-    );
-  }
+     );
+   }
 
   return (
     <div className="h-screen bg-background flex gradient-background">
