@@ -303,18 +303,18 @@ Now, generate the appropriate JSON response.`;
     return (
       <div className="h-screen bg-background gradient-background">
         <Tabs value={mobileTab} onValueChange={(value) => setMobileTab(value as 'history' | 'chat' | 'viz')} className="h-full flex flex-col">
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto pb-12"> {/* Add padding for the fixed tab bar */}
             <TabsContent value="history" className="h-full"><ChatHistoryPanel {...props} /></TabsContent>
             <TabsContent value="chat" className="h-full"><ChatPanel {...props} /></TabsContent>
             <TabsContent value="viz" className="h-full"><VisualizationPanel {...props} /></TabsContent>
           </div>
-          <TabsList className="grid w-full grid-cols-3 rounded-none">
+          <TabsList className="grid w-full grid-cols-3 rounded-none fixed bottom-0">
             <TabsTrigger value="history"><MessageSquare className="w-5 h-5" /></TabsTrigger>
             <TabsTrigger value="chat"><Send className="w-5 h-5" /></TabsTrigger>
             <TabsTrigger value="viz"><BarChart2 className="w-5 h-5" /></TabsTrigger>
           </TabsList>
          </Tabs>
-        </div>
+      </div>
      );
    }
 
