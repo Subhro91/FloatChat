@@ -60,3 +60,4 @@ To get a local copy up and running, follow these simple steps.
     ```
     The application will be available at `http://localhost:5173`.
 
+ 
