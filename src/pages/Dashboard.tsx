@@ -19,9 +19,8 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 export interface Message {
   id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
+  text: string;
+  isUser: boolean;
   visualization?: Visualization;
 }
 
@@ -59,7 +58,7 @@ const Dashboard = () => {
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [mobileTab, setMobileTab] = useState('chat'); // Add state for mobile tabs
+  const [mobileTab, setMobileTab] = useState<'history' | 'chat'>('history');
   const isMobile = useMobile();
 
   const exampleQueries = [
@@ -95,59 +94,46 @@ const Dashboard = () => {
   }, [user]);
 
   useEffect(() => {
-    if (!activeChatId || !user) {
-      setMessages([]);
-      setVisualizations(null);
-      return;
-    };
-    const q = query(
-      collection(db, "users", user.uid, "chats", activeChatId, "messages"),
-      orderBy("timestamp", "asc")
-    );
+    if (!user || !activeChatId) return;
+    const messagesCol = collection(db, "users", user.uid, "chats", activeChatId, "messages");
+    const q = query(messagesCol, orderBy("timestamp"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const loadedMessages: Message[] = snapshot.docs.map(doc => {
-        const data = doc.data();
-    return {
-          id: doc.id,
-          role: data.role,
-          content: data.content,
-          timestamp: data.timestamp?.toDate() || new Date(),
-          visualization: data.visualization,
-        };
-      });
+      const loadedMessages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
       setMessages(loadedMessages);
 
-      // Restore the latest visualization from the chat history
-      const lastVizMessage = [...loadedMessages].reverse().find(msg => msg.visualization);
-      if (lastVizMessage) {
-        setVisualizations(lastVizMessage.visualization);
+      const lastAiMessage = loadedMessages.filter(m => !m.isUser && m.visualization).pop();
+      if (lastAiMessage) {
+        setVisualizations(lastAiMessage.visualization || null);
       } else {
         setVisualizations(null);
       }
     });
-    return () => unsubscribe();
-  }, [activeChatId, user]);
+    return unsubscribe;
+  }, [user, activeChatId]);
 
-  const handleNewChat = () => {
+  const handleNewChat = async () => {
     setActiveChatId(null);
     setMessages([]);
     setVisualizations(null);
     setInputValue("");
-    if (isMobile) setMobileTab('chat'); // Switch to chat tab on mobile
+    if (isMobile) {
+      setMobileTab('chat');
+    }
   };
 
-  const handleSelectChat = (chatId: string) => {
-    setActiveChatId(chatId);
-    setVisualizations(null);
-    if (isMobile) setMobileTab('chat'); // Switch to chat tab on mobile
+  const handleSelectChat = (id: string) => {
+    setActiveChatId(id);
+    if (isMobile) {
+      setMobileTab('chat');
+    }
   };
 
-  const handleDeleteChat = async (e: React.MouseEvent, chatId: string) => {
+  const handleDeleteChat = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!user) return;
 
     try {
-      const chatDocRef = doc(db, "users", user.uid, "chats", chatId);
+      const chatDocRef = doc(db, "users", user.uid, "chats", id);
       const messagesQuery = query(collection(chatDocRef, "messages"));
       const messagesSnapshot = await getDocs(messagesQuery);
       
@@ -159,7 +145,7 @@ const Dashboard = () => {
 
       await deleteDoc(chatDocRef);
 
-      if (activeChatId === chatId) {
+      if (activeChatId === id) {
         handleNewChat();
       }
       
