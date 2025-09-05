@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PlusSquare, Trash2 } from "lucide-react";
 import { ChatHistory } from "@/pages/Dashboard"; // Assuming types are exported from Dashboard
+import useMobile from "@/hooks/use-mobile";
 
 interface ChatHistoryPanelProps {
   chatHistory: ChatHistory[];
@@ -19,6 +20,8 @@ const ChatHistoryPanel: React.FC<ChatHistoryPanelProps> = ({
   handleSelectChat,
   handleDeleteChat,
 }) => {
+  const isMobile = useMobile();
+
   return (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-border">
@@ -39,7 +42,9 @@ const ChatHistoryPanel: React.FC<ChatHistoryPanelProps> = ({
             >
               <p className="flex-1 mr-2 text-sm font-semibold break-words">{chat.title}</p>
               <Trash2 
-                className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                className={`h-4 w-4 shrink-0 text-muted-foreground transition-opacity ${
+                  isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                }`}
                 onClick={(e) => handleDeleteChat(e, chat.id)}
               />
             </div>
